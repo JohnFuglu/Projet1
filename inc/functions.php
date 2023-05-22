@@ -14,27 +14,24 @@ function fileExists(string $dir):bool{
                 if(str_contains($f, $_SESSION['nomFichier'])){
                     return true; 
                 }
-                else{
-                    echo "fichier non présent dans ".$dir."!";
-                }
             }
+                    echo "fichier non présent dans ".$dir."!";
             return false;
         }   
-    }
+    }//TODO Enlever les . et .. des  boucles
    function fileIsResized(string $dir,string $type):bool{
     $dirRes= scandir($dir);
         if($dirRes){//si il y a qqchose dans le dossier
             foreach($dirRes as $f){
                 if(str_contains($f, $_SESSION['nomFichier'])){
                     if(str_contains($f,$type)){
-                       $_SESSION['resizedImage']=RESIZE_DIR.$f;
+                       $_SESSION['resizedImage']='/Projet1/Assets/resized/'.$f;
                        return true;
                     }
                 }
-                else{
-                    echo "fichier non présent dans ".$dir."!";
-                }
             }
+             echo "fichier non présent dans ".$dir."!";
+                    echo'<br>';
             return false;
         }   
     }

@@ -4,10 +4,10 @@ define('ASSETS_DIR', '/opt/lampp/htdocs/Projet1/assets');
 define('ORIGINALS_DIR', '/opt/lampp/htdocs/Projet1/Assets/originals');
 define('RESIZE_DIR','/opt/lampp/htdocs/Projet1/Assets/resized');
 define('INC_DIR','/opt/lampp/htdocs/Projet1/inc/');
-define('EMPTY_IMG',ASSETS_DIR.'/empty.png');
+define('EMPTY_IMG','/Projet1/Assets/empty.png');
 require '/opt/lampp/htdocs/Projet1/inc/functions.php';
 //init des variablles 
-$image=EMPTY_IMG;
+$image='/Projet1/Assets/empty.png';
 $trouve=false;
 //récup des infos du html
 $nom=(isset($_POST['nom_image']) ? $_POST['nom_image']:'');
