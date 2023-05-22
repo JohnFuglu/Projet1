@@ -1,0 +1,11 @@
+h1 {text-align: center}
+img{
+    border: 2px solid black;
+}
+fieldset{
+    margin: auto;
+    border: 3px dashed darkcyan;
+    border-radius: 10px;
+    width: 40%;
+    padding-top: 20px 
+}
