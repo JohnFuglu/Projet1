@@ -8,6 +8,7 @@ $nomFichier;
 //avec  low, miniature, high. Retourner celui qui correspond
 //sinon faire la procédure actuelle de resize
 function fileExists(string $dir):bool{
+    $_SESSION['resolution']=$_POST['radio'];
     $dirOriginals= scandir($dir);
         if($dirOriginals){//si il y a qqchose dans le dossier
             foreach($dirOriginals as $f){
@@ -24,8 +25,8 @@ function fileIsResized(string $dir,string $type):bool{
     $dirRes= scandir($dir);
         if($dirRes){//si il y a qqchose dans le dossier
             foreach($dirRes as $f){
-                if(str_contains($f, $_SESSION['nomFichier'])){
-                    if(str_contains($f,$type)){
+                $needle=$_SESSION['nomFichier'];
+                if(strpos($f,$needle) && str_contains($f,$type)){
                         $path='/opt/lampp/htdocs/Projet1/Assets/resized/'.$f;
                         list($width,$height)= getimagesize($path);
                         $_SESSION['resSizeH']=$height;
@@ -38,8 +39,7 @@ function fileIsResized(string $dir,string $type):bool{
              echo "fichier non présent dans ".$dir."!";
                     echo'<br>';
             return false;
-        }   
-    }
+}
 function fileNameValidation($st):bool{
     $test=explode('.', $st);
     $t1= filter_var($test[0],FILTER_SANITIZE_SPECIAL_CHARS);
@@ -94,12 +94,14 @@ function getSize($path){
     $_SESSION['imgSrc']=$path;
 }
 
-function homothetie(string $path,float $rapport,image $img){
-    if($img->getResolution()=='mini'){
-            $vals=[($img->getWidth()*$rapport)/100,($img->getHeight()*$rapport)/100];
+function homothetie(string $path,float $rapport){
+    if($_SESSION['resolution']=='pourcentage'){
+            $vals=[($_SESSION['origWidth']*$rapport)/100,($_SESSION['origHeight']*$rapport)/100];
     }else {
-    $vals=[$img->getWidth()*$rapport,$img->getHeight()*$rapport];}
-    resize($vals,$img->getSource(),$img);
+    //$vals=[$_SESSION['origWidth']*$rapport,$_SESSION['origHeight']*$rapport];
+//}
+    }
+    resize($vals,$_SESSION['imgSrc']);
 }
 /*TODO ici faire une fonction setFile qui remplace $newfile= etc
 */
@@ -109,20 +111,12 @@ function resize(array $hAndw,string $path){
     imagecopyresampled($destImage, $original,0,0,0,0,$hAndw[0], $hAndw[1],$_SESSION['origWidth'],$_SESSION['origHeight']);
     $newfile= RESIZE_DIR.'/'.$_SESSION['resolution'].'_'.$_SESSION['nomFichier'].'.'.$_SESSION['extension'];
     imagejpeg($destImage,$newfile);
-    $_SESSION['newFile']= $newfile;
+    $_SESSION['resizedImage']= $newfile;
     imagedestroy($destImage);
     imagedestroy($original);
 }
 function resizeWitdhAndHeight(int $newHeight,int $newWidth, string $path){
     resize($ar=[$newHeight,$newWidth], $path);
-    /*$original=  imagecreatefromjpeg($path);
-    list($width,$height)= getimagesize($path);
-    $destImage = imagecreatetruecolor($newWidth, $newHeight);
-    imagecopyresampled($destImage, $original,0,0,0,0,$newWidth, $newHeight,$img->getWidth(),$img->getHeight());
-    $newfile= RESIZE_DIR.$img->getResolution().'_'.$img->getName().'.'.$img->getExtension();
-    imagejpeg($destImage,$newfile);
-    $_SESSION['newFile']= $newfile;
-    imagedestroy($destImage);
-    imagedestroy($original);*/
+
 }
 ?>
