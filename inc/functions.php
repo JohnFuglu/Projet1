@@ -12,6 +12,7 @@ function fileExists(string $dir):bool{
         if($dirOriginals){//si il y a qqchose dans le dossier
             foreach($dirOriginals as $f){
                 if(str_contains($f, $_SESSION['nomFichier'])){
+                    list($width,$height)=getSize(ORIGINALS_DIR.'/'.$_SESSION['nomFichier'].'.'.$_SESSION['extension']);
                     return true; 
                 }
             }
@@ -25,7 +26,11 @@ function fileIsResized(string $dir,string $type):bool{
             foreach($dirRes as $f){
                 if(str_contains($f, $_SESSION['nomFichier'])){
                     if(str_contains($f,$type)){
-                       $_SESSION['resizedImage']='/Projet1/Assets/resized/'.$f;
+                        $path='/opt/lampp/htdocs/Projet1/Assets/resized/'.$f;
+                        list($width,$height)= getimagesize($path);
+                        $_SESSION['resSizeH']=$height;
+                        $_SESSION['resSizeW']=$width;
+                        $_SESSION['resizedImage']='/Projet1/Assets/resized/'.$f;
                        return true;
                     }
                 }
@@ -36,7 +41,6 @@ function fileIsResized(string $dir,string $type):bool{
         }   
     }
 function fileNameValidation($st):bool{
-    //ici check sur présence de low, high, mini
     $test=explode('.', $st);
     $t1= filter_var($test[0],FILTER_SANITIZE_SPECIAL_CHARS);
     $t2=$test[1];
@@ -77,7 +81,7 @@ function resizeWidth(int $width){
     $h=($_SESSION['origHeight']*$perc)/100;
     resize([$width,$h],$_SESSION['imgSrc']);
 }
-function resizeHeight(int $height,image $img){
+function resizeHeight(int $height){
     $perc=($height/$_SESSION['origHeight'])*100;
     $w=($_SESSION['origWidth']*$perc)/100;
     resize([$w,$height],$_SESSION['imgSrc']);
@@ -103,15 +107,15 @@ function resize(array $hAndw,string $path){
     $original=  imagecreatefromjpeg($path);
     $destImage = imagecreatetruecolor($hAndw[0], $hAndw[1]);
     imagecopyresampled($destImage, $original,0,0,0,0,$hAndw[0], $hAndw[1],$_SESSION['origWidth'],$_SESSION['origHeight']);
-    $newfile= RESIZE_DIR.$_SESSION['resolution'].'_'.$_SESSION['nomFichier'].'.'.$_SESSION['extension'];
+    $newfile= RESIZE_DIR.'/'.$_SESSION['resolution'].'_'.$_SESSION['nomFichier'].'.'.$_SESSION['extension'];
     imagejpeg($destImage,$newfile);
     $_SESSION['newFile']= $newfile;
     imagedestroy($destImage);
     imagedestroy($original);
 }
-function resizeWitdhAndHeight(int $newHeight,int $newWidth, string $path,image $img){
-    
-    $original=  imagecreatefromjpeg($path);
+function resizeWitdhAndHeight(int $newHeight,int $newWidth, string $path){
+    resize($ar=[$newHeight,$newWidth], $path);
+    /*$original=  imagecreatefromjpeg($path);
     list($width,$height)= getimagesize($path);
     $destImage = imagecreatetruecolor($newWidth, $newHeight);
     imagecopyresampled($destImage, $original,0,0,0,0,$newWidth, $newHeight,$img->getWidth(),$img->getHeight());
@@ -119,6 +123,6 @@ function resizeWitdhAndHeight(int $newHeight,int $newWidth, string $path,image $
     imagejpeg($destImage,$newfile);
     $_SESSION['newFile']= $newfile;
     imagedestroy($destImage);
-    imagedestroy($original);
+    imagedestroy($original);*/
 }
 ?>
