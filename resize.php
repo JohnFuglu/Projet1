@@ -20,29 +20,36 @@ if(isset($_POST['submit'])){
         // le fichier existe-t-il?
         $trouve=fileExists(ORIGINALS_DIR);
             if($trouve){
-                if(fileIsResized(RESIZE_DIR,$_POST['radio'])){//TODO faire avec form et post
-                    $image=$_SESSION['resizedImage'];
-                }
-                else{//creation de la nouvelle image,préparation des valeurs
-                     getSize(ORIGINALS_DIR.'/'.$nom);
+                if(fileIsResized(RESIZE_DIR,$_POST['radio'])){
+                     //si la taille demandée correspond à ce que l'on a déjà
                      $newHeight=(isset($_POST['height']) ? $_POST['height']:'');
-                     $newidth=(isset($_POST['width']) ? $_POST['width']:'');
-                     if(!empty($newHeight) && empty($newidth)){
+                     $neWidth=(isset($_POST['width']) ? $_POST['width']:'');
+                    
+                     if($newHeight ==  $_SESSION['resSizeH'] && $neWidth ==  $_SESSION['resSizeW']){
+                        $image=$_SESSION['resizedImage'];
+                     }
+                }
+                else{
+                     //creation de la nouvelle image,préparation des valeurs
+                     $_SESSION['resolution']=$_POST['radio'];
+                     if(!empty($newHeight) && empty($neWidth)){
                         $_SESSION['newHeight']=$newHeight;
-                        resizeHeight($height, $img);
+                        resizeHeight($newHeight);
                      }
-                     if(!empty($newidth) && empty($newHeight)){
+                     if(!empty($neWidth) && empty($newHeight)){
                         $_SESSION['newWidth']=$newWidth;
-                        resizeWidth($width);
+                        resizeWidth($newidth);
                      }
-                     if(!empty($newidth) && !empty($newHeight)){
+                     if(!empty($neWidth) && !empty($newHeight)){
                          $_SESSION['newHeight']=$newHeight;
                          $_SESSION['newWidth']=$newWidth;
-                         resizeWitdhAndHeight($newHeight, $newWidth, $path, $img);
+                         resizeWitdhAndHeight($newHeight, $newWidth, $path);
                      }
+                     if(!empty($_SESSION['resizedImage']))
+                        $image=$_SESSION['resizedImage'];
                 }
             }
-            
+            session_destroy(); 
         }
     }
 ?>
