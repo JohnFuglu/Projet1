@@ -19,7 +19,7 @@ function fileExists(string $dir):bool{
             return false;
         }   
     }//TODO Enlever les . et .. des  boucles
-   function fileIsResized(string $dir,string $type):bool{
+function fileIsResized(string $dir,string $type):bool{
     $dirRes= scandir($dir);
         if($dirRes){//si il y a qqchose dans le dossier
             foreach($dirRes as $f){
@@ -66,28 +66,28 @@ function checkExtension($st):bool{
                 return false;
             }
 }
+
 //function FileInfo pour vérif image ...
 function getImageName($data):string {
     $tmp= explode($data);
     return count($tmp-1); 
 }
-function resizeWidth(int $width,image $img){
-    $perc=($width/$img->getWidth())*100;
-    $h=($img->getHeight()*$perc)/100;
-    resize([$width,$h],$img->getSource(),$img);
+function resizeWidth(int $width){
+    $perc=($width/$_SESSION['origWidth'])*100;
+    $h=($_SESSION['origHeight']*$perc)/100;
+    resize([$width,$h],$_SESSION['imgSrc']);
 }
 function resizeHeight(int $height,image $img){
-    $perc=($height/$img->getHeight())*100;
-    $w=($img->getWidth()*$perc)/100;
-    echo '<pre>';echo var_dump($img); echo '</pre>';
-    resize([$w,$height],$img->getSource(),$img);
+    $perc=($height/$_SESSION['origHeight'])*100;
+    $w=($_SESSION['origWidth']*$perc)/100;
+    resize([$w,$height],$_SESSION['imgSrc']);
 }
-function getSize($path, image $img){
-    $path='/opt/lampp/htdocs/PhpProject1/assets/originals/Hugo.jpg';
+
+function getSize($path){
     list($width,$height)= getimagesize(realpath($path));
-    $img->setHeight($height);
-    $img->setWidth($width);
-    $img->setSource($path);
+    $_SESSION['origHeight']=$height;
+    $_SESSION['origWidth']=$width;
+    $_SESSION['imgSrc']=$path;
 }
 
 function homothetie(string $path,float $rapport,image $img){
@@ -99,11 +99,11 @@ function homothetie(string $path,float $rapport,image $img){
 }
 /*TODO ici faire une fonction setFile qui remplace $newfile= etc
 */
-function resize(array $hAndw,string $path,image $img){
+function resize(array $hAndw,string $path){
     $original=  imagecreatefromjpeg($path);
     $destImage = imagecreatetruecolor($hAndw[0], $hAndw[1]);
-    imagecopyresampled($destImage, $original,0,0,0,0,$hAndw[0], $hAndw[1],$img->getWidth(),$img->getHeight());
-    $newfile= RESIZE_DIR.$img->getResolution().'_'.$img->getName().'.'.$img->getExtension();
+    imagecopyresampled($destImage, $original,0,0,0,0,$hAndw[0], $hAndw[1],$_SESSION['origWidth'],$_SESSION['origHeight']);
+    $newfile= RESIZE_DIR.$_SESSION['resolution'].'_'.$_SESSION['nomFichier'].'.'.$_SESSION['extension'];
     imagejpeg($destImage,$newfile);
     $_SESSION['newFile']= $newfile;
     imagedestroy($destImage);

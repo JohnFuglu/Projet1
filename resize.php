@@ -20,10 +20,29 @@ if(isset($_POST['submit'])){
         // le fichier existe-t-il?
         $trouve=fileExists(ORIGINALS_DIR);
             if($trouve){
-                if(fileIsResized(RESIZE_DIR,"low")){//TODO faire avec form et post
+                if(fileIsResized(RESIZE_DIR,$_POST['radio'])){//TODO faire avec form et post
                     $image=$_SESSION['resizedImage'];
                 }
+                else{//creation de la nouvelle image,préparation des valeurs
+                     getSize(ORIGINALS_DIR.'/'.$nom);
+                     $newHeight=(isset($_POST['height']) ? $_POST['height']:'');
+                     $newidth=(isset($_POST['width']) ? $_POST['width']:'');
+                     if(!empty($newHeight) && empty($newidth)){
+                        $_SESSION['newHeight']=$newHeight;
+                        resizeHeight($height, $img);
+                     }
+                     if(!empty($newidth) && empty($newHeight)){
+                        $_SESSION['newWidth']=$newWidth;
+                        resizeWidth($width);
+                     }
+                     if(!empty($newidth) && !empty($newHeight)){
+                         $_SESSION['newHeight']=$newHeight;
+                         $_SESSION['newWidth']=$newWidth;
+                         resizeWitdhAndHeight($newHeight, $newWidth, $path, $img);
+                     }
+                }
             }
+            
         }
     }
 ?>
@@ -43,6 +62,9 @@ if(isset($_POST['submit'])){
                     <label for="nom_image">Chercher une image</label>
                     <input type="text" name="nom_image"id="nom_image" required="Entrez un nom d'image">
                     <input type="submit" name="submit" value="chercher">
+                    <p><label for="low">Low</label><input type="radio" name="radio" id="low" value="Low" required></p>
+                    <p><label for="high">High</label><input type="radio" name="radio" id="high" value="high"></p>
+                    <p><label for="mini">Mini</label><input type="radio" name="radio" id="mini" value="mini"></p>
                 </p>
                 <p> 
                     <label for="image">Image à redimensioner:</label>
