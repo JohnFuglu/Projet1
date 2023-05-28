@@ -1,40 +1,45 @@
 <?php
 /*variables de chemins*/
-define('ASSETS_DIR', '/opt/lampp/htdocs/Projet1/assets');
+define('ASSETS_DIR', '/opt/lampp/htdocs/Projet1/Assets');
 define('ORIGINALS_DIR', '/opt/lampp/htdocs/Projet1/Assets/originals');
 define('RESIZE_DIR','/opt/lampp/htdocs/Projet1/Assets/resized');
 define('INC_DIR','/opt/lampp/htdocs/Projet1/inc/');
 define('EMPTY_IMG','/Projet1/Assets/empty.png');
 require '/opt/lampp/htdocs/Projet1/inc/functions.php';
-//init des variablles 
+
+//init des variables 
 $image='/Projet1/Assets/empty.png';
 $trouve=false;
+
 //récup des infos du html
 $nom=(isset($_POST['nom_image']) ? $_POST['nom_image']:'');
 
 
 if(isset($_POST['submit'])){
+
 //si le nom de fichier contient des infos normales
-    
     if(fileNameValidation($nom)){
-       $newHeight=(isset($_POST['height']) ? $_POST['height']:'');
-       $neWidth=(isset($_POST['width']) ? $_POST['width']:'');
+       
         // le fichier existe-t-il?
-        $trouve=fileExists(ORIGINALS_DIR);
-            if($trouve){
-                //est-il déjà resizé
-                $trouve=fileIsResized(RESIZE_DIR,$_POST['radio']);
-                    if($trouve){
-                     //si la taille demandée correspond à ce que l'on a déjà
+        $exists=fileExists(ASSETS_DIR.'/'.'originals');
+            if($exists){
+                $newHeight=(isset($_POST['height']) ? $_POST['height']:'');
+                $neWidth=(isset($_POST['width']) ? $_POST['width']:'');
+                    //est-il déjà resizé
+                    $trouve=fileIsResized(RESIZE_DIR,$_POST['radio']);
+                        if($trouve){
+                        //si la taille demandée correspond à ce que l'on a déjà
                      
-                     if($newHeight ==  $_SESSION['resSizeH'] && $neWidth ==  $_SESSION['resSizeW']){
-                        $image=$_SESSION['resizedImage'];
-                     }
-                     //si la hauteur et largeur ne sont pas remplies on va chercher l'image qui correspond au type 
-                     if(empty($newHeight) && empty($neWidth))
-                          $image=$_SESSION['resizedImage'];
-                     }
-    if(!$trouve){
+                        if($newHeight ==  $_SESSION['resSizeH'] && $neWidth ==  $_SESSION['resSizeW']){
+                            $image=$_SESSION['resizedImage'];
+                            
+                        }
+                        //si la hauteur et largeur ne sont pas remplies on va chercher l'image qui correspond au type 
+                        if(empty($newHeight) && empty($neWidth))
+                            $image=$_SESSION['resizedImage'];
+                        }
+                
+    if($exists && !$trouve){
                      //creation de la nouvelle image,préparation des valeurs
                      //changement d'échelle par pourcentage et homothétie
                      if(empty($neWidth) && empty($newHeight)){
@@ -45,15 +50,15 @@ if(isset($_POST['submit'])){
                                     $image=$_SESSION['resizedImage'];//affiche l'image mise à l'échelle
                                 }
                         }
-                     }
+                     }//divers cas pour l'utilisation de l'input pourcentage
                      if($_POST['pourcenNbr']==""){
                             if(!empty($newHeight) && empty($neWidth)){
                                 $_SESSION['newHeight']=$newHeight;
                                 resizeHeight($newHeight);
                             }
                             if(!empty($neWidth) && empty($newHeight)){
-                                $_SESSION['newWidth']=$newWidth;
-                                resizeWidth($newidth);
+                                $_SESSION['newWidth']=$neWidth;
+                                resizeWidth($neWidth);
                             }
                             if(!empty($neWidth) && !empty($newHeight)){
                                 $_SESSION['newHeight']=$newHeight;
@@ -67,11 +72,14 @@ if(isset($_POST['submit'])){
                 
                  }
             }
-         
+         if(!$exists){
+             die("Fichier demandé inexistant!!");
+              session_destroy(); 
+         }
         }
-                                session_destroy(); 
+                               
 
-    }
+    }     session_destroy(); 
 ?>
 
 <!doctype html>
@@ -89,8 +97,12 @@ if(isset($_POST['submit'])){
                     <label for="nom_image">Chercher une image</label>
                     <input type="text" name="nom_image"id="nom_image" required="Entrez un nom d'image">
                     <input type="submit" name="submit" value="chercher">
-                    <p><label for="low">Low</label><input type="radio" name="radio" id="low" value="low" required></p>
-                    <p><label for="pourcentage">Pourcentage</label><input type="radio" name="radio" id="pourcentage" value="pourcentage"></p>
+                    <p><label for="original">Original</label>
+                        <input type="radio" name="radio" id="original" value="original" required></p>
+                    <p><label for="low">Low</label>
+                        <input type="radio" name="radio" id="low" value="low"></p>
+                    <p><label for="pourcentage">Pourcentage</label>
+                        <input type="radio" name="radio" id="pourcentage" value="pourcentage"></p>
                 </p>
                 <p> 
                     <label for="image">Image à redimensioner:</label>

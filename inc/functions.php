@@ -1,12 +1,6 @@
 <?php
 session_start();
-//variables de session
-$extension;
-$chemin;
-$nomFichier;
-//TODO si le nom du fichier est présent dans resized
-//avec  low, miniature, high. Retourner celui qui correspond
-//sinon faire la procédure actuelle de resize
+/*teste si le fichier existe dans le dossier original*/
 function fileExists(string $dir):bool{
     $_SESSION['resolution']=$_POST['radio'];
     $dirOriginals= scandir($dir);
@@ -14,25 +8,29 @@ function fileExists(string $dir):bool{
             foreach($dirOriginals as $f){
                 if(str_contains($f, $_SESSION['nomFichier'])){
                     list($width,$height)=getSize(ORIGINALS_DIR.'/'.$_SESSION['nomFichier'].'.'.$_SESSION['extension']);
+                    $_SESSION['imgSrc']=ORIGINALS_DIR.'/'.$f;
                     return true; 
                 }
             }
-                    echo "fichier non présent dans ".$dir."!";
             return false;
         }   
-    }//TODO Enlever les . et .. des  boucles
+    }
+    
 function fileIsResized(string $dir,string $type):bool{
     $dirRes= scandir($dir);
         if($dirRes){//si il y a qqchose dans le dossier
             foreach($dirRes as $f){
-                $needle=$_SESSION['nomFichier'];
-                if(strpos($f,$needle) && str_contains($f,$type)){
+                if($f !== '.'&&$f!== '..'){
+                    $needle=$_SESSION['nomFichier'];
+                    if(strpos($f,$needle) && str_contains($f,$type)){
                         $path='/opt/lampp/htdocs/Projet1/Assets/resized/'.$f;
                         list($width,$height)= getimagesize($path);
                         $_SESSION['resSizeH']=$height;
                         $_SESSION['resSizeW']=$width;
                         $_SESSION['resizedImage']='/Projet1/Assets/resized/'.$f;
-                       return true;
+                    return true;
+                    }       
+                   
                     }
                 }
             }
@@ -103,8 +101,7 @@ function homothetie(string $path,float $rapport){
     }
     resize($vals,$_SESSION['imgSrc']);
 }
-/*TODO ici faire une fonction setFile qui remplace $newfile= etc
-*/
+
 function resize(array $hAndw,string $path){
     $original=  imagecreatefromjpeg($path);
     $destImage = imagecreatetruecolor($hAndw[0], $hAndw[1]);
