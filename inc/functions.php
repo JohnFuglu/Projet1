@@ -15,7 +15,7 @@ function fileExists(string $dir):bool{
             return false;
         }   
     }
-    
+//fichiier déjà resizé ? Avec différents cas de resize
 function fileIsResized(string $dir,string $type):bool{
     $dirRes= scandir($dir);
         if($dirRes){//si il y a qqchose dans le dossier
@@ -34,10 +34,10 @@ function fileIsResized(string $dir,string $type):bool{
                     }
                 }
             }
-             echo "fichier non présent dans ".$dir."!";
-                    echo'<br>';
+             echo "fichier de type ".$type." non présent dans ".$dir."!";
             return false;
 }
+//vérifie que la partie nom est propre
 function fileNameValidation($st):bool{
     $test=explode('.', $st);
     $t1= filter_var($test[0],FILTER_SANITIZE_SPECIAL_CHARS);
@@ -45,6 +45,7 @@ function fileNameValidation($st):bool{
     $_SESSION['nomFichier']=$t1;
     return checkExtension($t2);
 }
+//vérifie que l'extension est valide
 function checkExtension($st):bool{
     strtolower($st);
             switch ($st){
@@ -69,11 +70,13 @@ function checkExtension($st):bool{
             }
 }
 
-//function FileInfo pour vérif image ...
 function getImageName($data):string {
     $tmp= explode($data);
     return count($tmp-1); 
 }
+/*Diverses fonctions similaires pour changer la taille suivant la hauteur
+la largeur ou les 2. Plus une pour appliquer un pourcentage. */
+
 function resizeWidth(int $width){
     $perc=($width/$_SESSION['origWidth'])*100;
     $h=($_SESSION['origHeight']*$perc)/100;
@@ -85,23 +88,27 @@ function resizeHeight(int $height){
     resize([$w,$height],$_SESSION['imgSrc']);
 }
 
+function homothetie(string $path,float $rapport){
+    if($_SESSION['resolution']=='pourcentage'){
+            $vals=[($_SESSION['origWidth']*$rapport)/100,($_SESSION['origHeight']*$rapport)/100];
+    }else {
+  }
+    resize($vals,$_SESSION['imgSrc']);
+}
+function resizeWitdhAndHeight(int $newHeight,int $newWidth, string $path){
+    resize($ar=[$newHeight,$newWidth], $path);
+
+}
+
+
+//récupérer la taille du fichier original ainsi que son chemin
 function getSize($path){
     list($width,$height)= getimagesize(realpath($path));
     $_SESSION['origHeight']=$height;
     $_SESSION['origWidth']=$width;
     $_SESSION['imgSrc']=$path;
 }
-
-function homothetie(string $path,float $rapport){
-    if($_SESSION['resolution']=='pourcentage'){
-            $vals=[($_SESSION['origWidth']*$rapport)/100,($_SESSION['origHeight']*$rapport)/100];
-    }else {
-    //$vals=[$_SESSION['origWidth']*$rapport,$_SESSION['origHeight']*$rapport];
-//}
-    }
-    resize($vals,$_SESSION['imgSrc']);
-}
-
+//morceau commun pour créer l'image et l'enregistrer
 function resize(array $hAndw,string $path){
     $original=  imagecreatefromjpeg($path);
     $destImage = imagecreatetruecolor($hAndw[0], $hAndw[1]);
@@ -112,8 +119,5 @@ function resize(array $hAndw,string $path){
     imagedestroy($destImage);
     imagedestroy($original);
 }
-function resizeWitdhAndHeight(int $newHeight,int $newWidth, string $path){
-    resize($ar=[$newHeight,$newWidth], $path);
 
-}
 ?>

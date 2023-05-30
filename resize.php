@@ -35,58 +35,77 @@ if(isset($_POST['submit'])){
                     $h=intval($height);
                     session_unset();
                 }
+                else {$original=false;}
+                //si c'est pas l'original qui est demandé
                 if(!$original){
-                $newHeight=(isset($_POST['height']) ? $_POST['height']:'');
-                $neWidth=(isset($_POST['width']) ? $_POST['width']:'');
+                    //enregistrement des mesures
+                    $newHeight=(isset($_POST['height']) ? $_POST['height']:'');
+                    $neWidth=(isset($_POST['width']) ? $_POST['width']:'');
+                    
                     //est-il déjà resizé
                     $trouve=fileIsResized(RESIZE_DIR,$_POST['radio']);
                         if($trouve){
-                        //si la taille demandée correspond à ce que l'on a déjà
+                            $image=$_SESSION['resizedImage'];
+                            $w=$_SESSION['resSizeW'];
+                            $h=$_SESSION['resSizeH'];
+                        }
                      
-                        if($newHeight ==  $_SESSION['resSizeH'] && $neWidth ==  $_SESSION['resSizeW']){
-                            $image=$_SESSION['resizedImage'];
-                            
-                        }
-                        //si la hauteur et largeur ne sont pas remplies on va chercher l'image qui correspond au type 
-                        if(empty($newHeight) && empty($neWidth))
-                            $image=$_SESSION['resizedImage'];
-                }
+                        //si la taille demandée correspond à ce que l'on a déjà
+                        if($trouve && $newHeight !== $h && $neWidth !==  $w){
+                            $trouve=false;
+                            //n'est pas présent dans ces dimensions, on va le remplacer
+                            $newHeight=(isset($_POST['height']) ? $_POST['height']:'');
+                            $neWidth=(isset($_POST['width']) ? $_POST['width']:'');
+                         }
+                       
                 
                         }
-                
+                //si l'original existe et que l'on veut une image resizée non présente
     if($exists && !$trouve && !$original){
                      //creation de la nouvelle image,préparation des valeurs
-                     //changement d'échelle par pourcentage et homothétie
+                    
                      if(empty($neWidth) && empty($newHeight)){
+                          //changement d'échelle par pourcentage
                          if($_POST['radio']=='pourcentage'){
                             $rapport=(isset($_POST['pourcenNbr']) ? $_POST['pourcenNbr']:'');
                                 if(!empty($rapport)){
                                     homothetie($_SESSION['imgSrc'], $rapport);
-                                    $image=$_SESSION['resizedImage'];//affiche l'image mise à l'échelle
+                                    $image=$_SESSION['resizedImage'];
+                                    list($width,$height)= getImageSize(realpath($image));
+                                    $w= intval($width);
+                                    $h=intval($height);
                                 }
                         }
-                     }//divers cas pour l'utilisation de l'input pourcentage
-                     if($_POST['pourcenNbr']==""){
+                     }//divers cas pour l'utilisation des tailles 
+                     $done=false;
+                     if($_POST['pourcenNbr']=="" && !$done){
                             if(!empty($newHeight) && empty($neWidth)){
                                 $_SESSION['newHeight']=$newHeight;
                                 resizeHeight($newHeight);
+                                $done=true;
                             }
-                            if(!empty($neWidth) && empty($newHeight)){
+                            if(!empty($neWidth) && empty($newHeight)  &&!$done){
                                 $_SESSION['newWidth']=$neWidth;
                                 resizeWidth($neWidth);
+                                $done=true;
                             }
-                            if(!empty($neWidth) && !empty($newHeight)){
+                            //mise à l'échelle sans homothétie et donc potentiellement déformée
+                            if(!empty($neWidth) && !empty($newHeight) &&!$done){
                                 $_SESSION['newHeight']=$newHeight;
                                 $_SESSION['newWidth']=$neWidth;
                                 resizeWitdhAndHeight($newHeight, $neWidth, $_SESSION['imgSrc']);
+                                $done=true;
                             }
-                            if(!empty($_SESSION['resizedImage'])){
+                            //affichage de l'image modifiée 
+                            if(!empty($_SESSION['resizedImage'] && $done)){
                                 $image=$_SESSION['resizedImage'];
+                                list($width,$height)= getImageSize(realpath($image));
+                                $w= intval($width);
+                                $h=intval($height);
                                 session_destroy();
                                 header('Location:resize.php');
                             }
                     }
-                
                  }
             }
          if(!$exists){
@@ -94,9 +113,8 @@ if(isset($_POST['submit'])){
               session_destroy(); 
          }
         }
-                               
-
-    }     session_destroy(); 
+                                   session_destroy(); 
+    } 
 ?>
 
 <!doctype html>
@@ -163,6 +181,7 @@ if(isset($_POST['submit'])){
             let int2 = w.length;
             w= w.substr(0,int2-1);
             img.width=w;
+            //ajout de l'image dans le DOC
             place.appendChild(img);
        </script>
 </html>
