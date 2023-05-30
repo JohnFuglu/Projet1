@@ -1,4 +1,5 @@
 <?php
+header("cache-control:no-cache");
 /*variables de chemins*/
 define('ASSETS_DIR', '/opt/lampp/htdocs/Projet1/Assets');
 define('ORIGINALS_DIR', '/opt/lampp/htdocs/Projet1/Assets/originals');
@@ -9,6 +10,9 @@ require '/opt/lampp/htdocs/Projet1/inc/functions.php';
 
 //init des variables 
 $image='/Projet1/Assets/empty.png';
+list($width,$height)= getImageSize(realpath('/opt/lampp/htdocs/Projet1/Assets/empty.png'));
+$w= intval($width);
+$h=intval($height);
 $trouve=false;
 
 //récup des infos du html
@@ -23,6 +27,15 @@ if(isset($_POST['submit'])){
         // le fichier existe-t-il?
         $exists=fileExists(ASSETS_DIR.'/'.'originals');
             if($exists){
+                if($_POST['radio']==='original'){
+                    $original=true;
+                    $image='/Projet1/Assets/originals'.'/'.$nom;
+                    list($width,$height)= getImageSize(realpath(ORIGINALS_DIR.'/'.$nom));
+                    $w= intval($width);
+                    $h=intval($height);
+                    session_unset();
+                }
+                if(!$original){
                 $newHeight=(isset($_POST['height']) ? $_POST['height']:'');
                 $neWidth=(isset($_POST['width']) ? $_POST['width']:'');
                     //est-il déjà resizé
@@ -37,9 +50,11 @@ if(isset($_POST['submit'])){
                         //si la hauteur et largeur ne sont pas remplies on va chercher l'image qui correspond au type 
                         if(empty($newHeight) && empty($neWidth))
                             $image=$_SESSION['resizedImage'];
+                }
+                
                         }
                 
-    if($exists && !$trouve){
+    if($exists && !$trouve && !$original){
                      //creation de la nouvelle image,préparation des valeurs
                      //changement d'échelle par pourcentage et homothétie
                      if(empty($neWidth) && empty($newHeight)){
@@ -67,6 +82,8 @@ if(isset($_POST['submit'])){
                             }
                             if(!empty($_SESSION['resizedImage'])){
                                 $image=$_SESSION['resizedImage'];
+                                session_destroy();
+                                header('Location:resize.php');
                             }
                     }
                 
@@ -84,6 +101,7 @@ if(isset($_POST['submit'])){
 
 <!doctype html>
 <html lang="fr">
+  
     <head>
         <title>Service de redimension</title>
         <meta charset="utf-8">
@@ -106,7 +124,9 @@ if(isset($_POST['submit'])){
                 </p>
                 <p> 
                     <label for="image">Image à redimensioner:</label>
-                    <img src="<?=$image?>" alt="image chargée" id="image">
+                    
+                    <div id="imagePlace"></div>
+
                 </p>
             </fieldset>
             <fieldset>
@@ -118,6 +138,32 @@ if(isset($_POST['submit'])){
                 <input type="number" name="pourcenNbr" id="pourcenNbr"></p>
             </fieldset>
         </form>
+            <!--variables cachées pour accéder au php       -->
+         <input type="hidden" id="variable" value= <?php echo $image; ?>/>
+         <input type="hidden" id="varHeight" value= <?php echo $h; ?>/>
+         <input type="hidden" id="varWidth" value= <?php echo $w; ?>/>
     </body>
+   
+       <script>
+            //creation d'une image
+            var img = document.createElement("img");
+            img.src= document.getElementById("variable").value;
+            //recup la place de l'image
+            var place = document.getElementById("imagePlace");
+            //coupe la fin à cause d'un / en trop
+            let int = img.src.length;
+            img.src= img.src.substr(0,int-1);
+            
+            //idem pour les params de hauteur et largeur
+            let h= document.getElementById("varHeight").value;
+            let int1 = h.length;  
+            h= h.substr(0,int1-1);
+            img.height=h;
+            let w= document.getElementById("varWidth").value;
+            let int2 = w.length;
+            w= w.substr(0,int2-1);
+            img.width=w;
+            place.appendChild(img);
+       </script>
 </html>
 
